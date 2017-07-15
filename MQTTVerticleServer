@@ -1,0 +1,56 @@
+
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.mqtt.MqttServer;
+import java.nio.charset.Charset;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+/**
+ *
+ * @author estewai
+ */
+public class MQTTVerticleServer extends AbstractVerticle {
+
+    private final Logger log = Logger.getLogger(MQTTVerticleServer.class.getName());
+    
+
+    public void start() {
+        init();
+    }
+
+    private void init() {
+        MqttServer mq = MqttServer.create(vertx);
+        mq.endpointHandler(h
+                -> {
+            h.publishHandler(hndlr
+                    -> {
+                if (hndlr.topicName() == "pumptopic") {
+                    System.out.println(hndlr.payload().toString(Charset.defaultCharset()));
+                }
+            });
+            h.publish("my_topic",
+                    Buffer.buffer("Hello from the Vert.x MQTT server"),
+                    MqttQos.
+                    false,
+                    false);
+
+        });
+        mq.listen(1883, handler
+                -> {
+            if (handler.succeeded()) {
+                log.log(Level.INFO, "Server started Successfully");
+            } else {
+                log.log(Level.SEVERE, "Server did not start");
+            }
+        });
+    }
+
+}
